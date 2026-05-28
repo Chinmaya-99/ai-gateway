@@ -24,8 +24,6 @@ dump.rdb
 .DS_Store
 
 
-# ChromaDB
-chromadb/
-chromadb_data/
-chroma/
-*.sqlite3
+#storage
+storage/chromadb/
+storage/responses.db

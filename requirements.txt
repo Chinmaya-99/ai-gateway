@@ -1,0 +1,10 @@
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+pydantic>=1.10
+python-dotenv>=1.0
+chromadb>=0.4.0
+langchain>=0.0.300
+langchain-huggingface>=0.0.1
+langchain-google-genai>=0.0.1
+langchain-openrouter>=0.0.1
+langchain-groq>=0.0.1

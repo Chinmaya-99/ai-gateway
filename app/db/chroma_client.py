@@ -1,14 +1,17 @@
 import chromadb
-from pydantic_datatypes import EmbeddingModelData
 import uuid
 from pathlib import Path
 
+from app.core.models.cache_models import EmbeddingModelData
+
 class VectorStore:
     def __init__(self):
-        base_dire=Path(__file__).parent
+        BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+        CHROMA_PATH = BASE_DIR / "storage" / "chromadb"
 
         self.client = chromadb.PersistentClient(
-            path=str(base_dire/"chromadb_data")
+            path=str(CHROMA_PATH)
         )
 
         self.collection = (
