@@ -1,14 +1,17 @@
 import chromadb
-import uuid
 from pathlib import Path
 
 from app.core.models.cache_models import EmbeddingModelData
+PROJECT_ROOT = Path(__file__).resolve()
+
+while PROJECT_ROOT.name != "ai_gateway":
+    PROJECT_ROOT = PROJECT_ROOT.parent
+
+CHROMA_PATH = PROJECT_ROOT / "storage" / "chromadb"
 
 class VectorStore:
     def __init__(self):
-        BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-        CHROMA_PATH = BASE_DIR / "storage" / "chromadb"
+       
 
         self.client = chromadb.PersistentClient(
             path=str(CHROMA_PATH)
@@ -19,13 +22,14 @@ class VectorStore:
                 name="embeddings"
             )
         )
+        print("VECTOR PATH:", CHROMA_PATH)
+        print("VECTOR COLLECTION:", self.collection.name)
 
     def add_documents(self, data: EmbeddingModelData):
-        unique_id = str(uuid.uuid4())
         self.collection.add(
-            documents=[data.text], embeddings=[data.embedding], ids=[unique_id]
+            documents=[data.text], embeddings=[data.embedding], ids=[data.cache_id]
         )
         return {
             "status": "success",
-            "message": f"Document added with ID: {unique_id}",
+            "message": f"Document added with ID: {data.cache_id}",
         }

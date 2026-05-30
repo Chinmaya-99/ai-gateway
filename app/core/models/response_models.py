@@ -1,9 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
-from uuid import UUID
 
 class LLMResponse(BaseModel):
-    cache_id: UUID
+    cache_id: str
     provider: str
     model: str
     answer: str

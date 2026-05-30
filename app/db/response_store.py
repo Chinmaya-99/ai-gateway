@@ -13,6 +13,7 @@ class ResponseStore:
         self.cursor = self.connection.cursor()
 
         self.create_table()
+        print("data_base_path:", DB_PATH)
 
     def create_table(self):
 
