@@ -1,7 +1,7 @@
 import chromadb
 from pathlib import Path
 
-from app.core.models.cache_models import EmbeddingModelData
+from ai_gateway.app.models.cache_models import EmbeddingModelData
 PROJECT_ROOT = Path(__file__).resolve()
 
 while PROJECT_ROOT.name != "ai_gateway":

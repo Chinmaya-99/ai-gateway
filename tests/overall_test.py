@@ -8,9 +8,9 @@ sys.path.append(
 from app.services.embeddings.embedding_service import EmbeddingModel
 from app.db.chroma_client import VectorStore
 from app.services.cache.semantic_cache import SemanticCache
-from app.core.models.cache_models import EmbeddingModelData
-from app.core.models.response_models import LLMResponse
-from app.core.models.request_models import QueryRequest, EmbeddingRequest
+from ai_gateway.app.models.cache_models import EmbeddingModelData
+from ai_gateway.app.models.response_models import LLMResponse
+from ai_gateway.app.models.request_models import QueryRequest, EmbeddingRequest
 from app.services.llm.router import models_init
 from app.db.response_store import ResponseStore
 from datetime import datetime
@@ -79,7 +79,7 @@ print("\n\n======================search similar embedding in semantic cache=====
 cache = SemanticCache()
 query_embedding = embaddings.embedding
 
-result = cache.search_similar(
+result = cache.search_similarity_score(
     query_embedding
 )
 

@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-from app.core.models.response_models import LLMResponse
+from ai_gateway.app.models.response_models import LLMResponse
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DB_PATH = BASE_DIR / "storage" / "responses.db"

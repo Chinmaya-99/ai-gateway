@@ -9,7 +9,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openrouter import ChatOpenRouter
 from langchain_groq import ChatGroq
-from app.core.models.response_models import LLMResponse
+from ai_gateway.app.models.response_models import LLMResponse
 
 load_dotenv()
 

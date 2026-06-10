@@ -1,6 +1,6 @@
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
-from app.core.models.cache_models import EmbeddingModelData
+from ai_gateway.app.models.cache_models import EmbeddingModelData
 
 load_dotenv()
 
