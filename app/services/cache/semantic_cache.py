@@ -20,6 +20,7 @@ class SemanticCache:
         self.collection = self.client.get_or_create_collection(name="embeddings")
         print("CACHE PATH:", CHROMA_PATH)
         print("CACHE COLLECTION:", self.collection.name)
+        print(self.collection.metadata)
 
     def search_similar(self, query_embedding: list[float], n_results: int = 1):
 

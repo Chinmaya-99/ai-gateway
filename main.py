@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 
-from app.api.routes.health import router as health_router
-from app.api.routes.chat import router as chat_router
-from app.api.routes.embeddings import router as embeddings_router
-from app.api.routes.cache import router as cache_router
+from ai_gateway.app.api.routes.health import router as health_router
+from ai_gateway.app.api.routes.chat import router as chat_router
+from ai_gateway.app.api.routes.embeddings import router as embeddings_router
+from ai_gateway.app.api.routes.cache import router as cache_router
 
 app = FastAPI(title="AI Gateway")
 

@@ -38,7 +38,7 @@ class models_init:
         self.final_chain = self.prompt | self.lamma.with_fallbacks([self.gemini])
     
 
-    def get_response(self, context, query) -> LLMResponse:
+    def get_response_llm(self, context, query) -> LLMResponse:
         """Invokes the LLM and returns the response."""
         
         return self.final_chain.invoke(

@@ -2,12 +2,13 @@ import hashlib
 import uuid
 from datetime import datetime
 from ai_gateway.app.services.cache.exact_cache import ExactCache
-from app.services.embeddings.embedding_service import EmbeddingModel
-from app.services.cache.semantic_cache import SemanticCache
-#from app.services.cache.exact_cache import ExactCache
-from app.services.llm.router import models_init
-from app.db.response_store import ResponseStore
-from app.models.response_models import LLMResponse
+from ai_gateway.app.services.embeddings.embedding_service import EmbeddingModel
+from ai_gateway.app.services.cache.semantic_cache import SemanticCache
+from ai_gateway.app.services.cache.exact_cache import ExactCache
+from ai_gateway.app.services.llm.router import models_init
+from ai_gateway.app.db.response_store import ResponseStore
+from ai_gateway.app.models.response_models import LLMResponse
+from ai_gateway.app.db.chroma_client import VectorStore
 
 
 
@@ -22,6 +23,7 @@ class CacheManager:
         self.exact_cache = ExactCache()
         self.response_store = ResponseStore()
         self.llm = models_init()
+        self.vector_store = VectorStore()
 
     def handle(self,query:str):
        # ── L1: Exact cache (SHA-256) ──────────────────────────────────
@@ -38,20 +40,21 @@ class CacheManager:
 
         cache_id = str(uuid.uuid4())
         embedding_data = self.embedding_model.embed_text(query, cache_id=cache_id)
-        query_embedding = embedding_data.embedding
+        # query_embedding = embedding_data.embedding
 
     
-        semanntic_hit = self.semantic_cache.search_similar(query_embedding)
-        if semanntic_hit and semanntic_hit.similarity >= SIMILARITY_THRESHOLD:
-            return {
-                "answer": semanntic_hit.answer,
-                "cache_hit": True,
-                "cache_tier": "L2_semantic",
-                "provider": "cache",
-                "tokens": None,
-            }
+        # semanntic_hit = self.semantic_cache.search_similar(query_embedding)
+
+        # if semanntic_hit and semanntic_hit.similarity >= SIMILARITY_THRESHOLD:
+        #     return {
+        #         "answer": semanntic_hit.answer,
+        #         "cache_hit": True,
+        #         "cache_tier": "L2_semantic",
+        #         "provider": "cache",
+        #         "tokens": None,
+        #     }
          # ── L3: LLM processing ─────────────────────────────────────────
-        raw_response = self.llm.get_response(context="", query=query)
+        raw_response = self.llm.get_response_llm(context="", query=query)
 
         response = LLMResponse(
         cache_id=cache_id,
@@ -80,8 +83,8 @@ class CacheManager:
 
         created_at=datetime.utcnow()
     )
-        self.add_document(embedding_data)
-        self.add_response(response)
+        self.vector_store.add_documents(embedding_data)
+        self.response_store.add_response(response)
         return {
             "answer": response.answer,
             "cache_hit": False,
