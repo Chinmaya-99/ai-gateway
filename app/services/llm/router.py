@@ -38,9 +38,8 @@ class models_init:
         self.final_chain = self.prompt | self.lamma.with_fallbacks([self.gemini])
     
 
-    def get_response_llm(self, context, query) -> LLMResponse:
-        """Invokes the LLM and returns the response."""
-        
-        return self.final_chain.invoke(
+    async def get_response_llm(self, context: str, query: str):
+        """Async invoke — uses LangChain's ainvoke so the event loop stays free."""
+        return await self.final_chain.ainvoke(
             {"context": context, "query": query}
         )
