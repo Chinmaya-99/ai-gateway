@@ -22,8 +22,8 @@ class SemanticCache:
         return instance
 
     async def _initialize(self):
-        self.client = await chromadb.AsyncPersistentClient(path=str(CHROMA_PATH))
-        self.collection = await self.client.get_or_create_collection(name="embeddings")
+        self.client = chromadb.PersistentClient(path=str(CHROMA_PATH))
+        self.collection = self.client.get_or_create_collection(name="embeddings")
         print("CACHE PATH:", CHROMA_PATH)
         print("CACHE COLLECTION:", self.collection.name)
         print(self.collection.metadata)
@@ -32,11 +32,9 @@ class SemanticCache:
         self, query_embedding: list[float], n_results: int = 1
     ) -> dict | None:
 
-        results = await self.collection.query(
+        results = self.collection.query(
             query_embeddings=[query_embedding], n_results=n_results
         )
-        print("\nRAW RESULTS:")
-        print(results)
 
         if not results["ids"][0]:
             return None

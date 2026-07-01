@@ -1,7 +1,10 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class UserLogRequest(BaseModel):
+class register_request(BaseModel):
     username: str
     password: str
-    timestamp: datetime
+
+class login_request(BaseModel):
+    username: str
+    password: str

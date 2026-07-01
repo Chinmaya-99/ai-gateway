@@ -1,7 +1,7 @@
 import aiosqlite
 from pathlib import Path
 
-from ai_gateway.app.models.response_models import LLMResponse
+from app.models.response_models import LLMResponse
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DB_PATH = BASE_DIR / "storage" / "responses.db"
@@ -43,6 +43,7 @@ class ResponseStore:
         await self.connection.commit()
 
     async def add_response(self, response: LLMResponse) -> dict:
+        print ("Storing response in database:")
         await self.connection.execute(
             """
             INSERT INTO responses VALUES (

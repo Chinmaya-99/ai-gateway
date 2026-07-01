@@ -27,3 +27,6 @@ dump.rdb
 #storage
 storage/chromadb/
 storage/responses.db
+
+#credentials
+services/auth/user_credentials.txt

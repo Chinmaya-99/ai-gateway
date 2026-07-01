@@ -2,14 +2,13 @@ import hashlib
 import uuid
 from datetime import datetime
 
-from ai_gateway.app.services.cache.exact_cache import ExactCache
-from ai_gateway.app.services.embeddings.embedding_service import EmbeddingModel
-from ai_gateway.app.services.cache.semantic_cache import SemanticCache
-from ai_gateway.app.services.llm.router import ModelsInit
-from ai_gateway.app.db.response_store import ResponseStore
-from ai_gateway.app.models.response_models import LLMResponse
-from ai_gateway.app.db.chroma_client import VectorStore
-
+from app.services.cache.exact_cache import ExactCache
+from app.services.embeddings.embedding_service import EmbeddingModel
+from app.services.cache.semantic_cache import SemanticCache
+from app.services.llm.router import models_init as ModelsInit
+from app.db.response_store import ResponseStore
+from app.models.response_models import LLMResponse
+from app.db.chroma_client import VectorStore
 
 SIMILARITY_THRESHOLD = 0.85
 
@@ -61,10 +60,21 @@ class CacheManager:
         query_embedding = embedding_data.embedding
 
         semantic_hit = await self.semantic_cache.search_similar(query_embedding)
+        hit_id = semantic_hit["cache_id"]
 
         if semantic_hit and semantic_hit["similarity"] >= SIMILARITY_THRESHOLD:
-            result = await self.response_store.get_response(semantic_hit["cache_id"])
+            print("Semantic hit:", semantic_hit)
+            print("Cache ID:", hit_id)
+
+            result = await self.response_store.get_response(cache_id=hit_id)
+
+            print("Response Store Result:", result)
             print("Semantic Cache Hit:", semantic_hit)
+            if result is None:
+                print("No response found in response store for cache ID:", hit_id)
+                print("Proceeding to L3 LLM processing.")
+
+
             return {
                 "answer": result["answer"],
                 "cache_hit": True,
@@ -74,7 +84,6 @@ class CacheManager:
                 "completion": result["completion_tokens"],
                 "total": result["total_tokens"],
             }
-
         # ── L3: LLM processing ─────────────────────────────────────────
         raw_response = await self.llm.get_response_llm(context="", query=query)
 
@@ -83,11 +92,16 @@ class CacheManager:
             provider=raw_response.response_metadata["model_provider"],
             model=raw_response.response_metadata["model_name"],
             answer=raw_response.content,
-            prompt_tokens=raw_response.response_metadata["token_usage"]["prompt_tokens"],
-            completion_tokens=raw_response.response_metadata["token_usage"]["completion_tokens"],
+            prompt_tokens=raw_response.response_metadata["token_usage"][
+                "prompt_tokens"
+            ],
+            completion_tokens=raw_response.response_metadata["token_usage"][
+                "completion_tokens"
+            ],
             total_tokens=raw_response.response_metadata["token_usage"]["total_tokens"],
             created_at=datetime.utcnow(),
         )
+        print("LLM Response:", response)
 
         await self.vector_store.add_documents(embedding_data)
         await self.response_store.add_response(response)

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi import FastAPI
-from ai_gateway.app.services.cache.cache_manager import CacheManager
-from ai_gateway.app.models.request_models import QueryRequest
+from app.models.request_models import QueryRequest
+from app.services.cache.cache_manager import CacheManager
 from fastapi import HTTPException
 
 
