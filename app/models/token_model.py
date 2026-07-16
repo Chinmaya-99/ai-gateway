@@ -1,6 +1,7 @@
 from pydantic import BaseModel
-from datetime import datetime
+from typing import Literal
 
-class Tokenmodel(BaseModel):
-    token: str
-    accesse_token: str
+
+class TokenData(BaseModel):
+    username: str
+    role: Literal["admin", "user"]

@@ -1,21 +1,59 @@
-import hashlib
 import os
-import getpass
+import bcrypt
+from jose import jwt, JWTError
+from datetime import datetime, timedelta, timezone
+from fastapi import HTTPException, status
+from app.models.token_model import TokenData
 
 
 file_path = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(file_path, "user_credentials.txt")
 
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-me-in-production")
+ALGORITHM = "HS256"
+TOKEN_EXPIRE_HOURS = 1
+
+class AuthError(Exception):
+    def __init__(self, error, status_code=status.HTTP_401_UNAUTHORIZED):
+        self.error = error
+        self.status_code = status_code
 
 class AuthService:
     def __init__(self):
         self.data_file =DATA_FILE
         self.user_db = self.load_database()
-
+        
     @staticmethod
     def hash_password(password: str) -> str:
-        return hashlib.sha256(password.encode()).hexdigest()
+        """Hashes a password with bcrypt (includes salt automatically)."""
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
+    @staticmethod
+    def verify_password(password: str, stored_hashed: str) -> bool:
+        """Constant-time comparison to prevent timing attacks."""
+        return bcrypt.checkpw(password.encode(), stored_hashed.encode())
+
+
+    @staticmethod
+    def create_token(username: str,role:str) -> str:
+        """Returns a signed JWT valid for TOKEN_EXPIRE_HOURS hours."""
+        expire = datetime.now(timezone.utc) + timedelta(hours=TOKEN_EXPIRE_HOURS)
+        payload = {"sub": username, "exp": expire, "role": role}
+        return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    @staticmethod
+    def decode_token(token: str) -> TokenData:
+        """Decodes a JWT and returns the username and role, or raises AuthError."""
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            username: str = payload.get("sub")
+            role: str = payload.get("role")
+            if username is None or role is None:
+                raise AuthError("Token payload missing subject.")
+            return TokenData(username=username, role=role)
+        except JWTError as e:
+            raise AuthError(f"Invalid or expired token: {e}")
+        
 
     def load_database(self) -> dict:
         """Reads stored credentials and parses them into a dictionary."""
@@ -27,56 +65,23 @@ class AuthService:
             for line in file:
                 line = line.strip()
                 if line and ":" in line:
-                    username, hashed_pwd = line.split(":", 1)
-                    user_db[username] = hashed_pwd
+                    username, hashed_pwd, role = line.split(":", 2)
+                    user_db[username] = {"hashed_pwd": hashed_pwd, "role": role}
         return user_db
 
 
-    def save_user(self, username: str, hashed_pwd: str):
+    def save_user(self, username: str, hashed_pwd: str,role: str):
         """Appends a new user record to the credentials file."""
         with open(self.data_file, "a") as file:
-            file.write(f"{username}:{hashed_pwd}\n")
+            file.write(f"{username}:{hashed_pwd}:{role}\n")
 
-
-    def register_user(self,username: str, password: str):
-        """Handles the user registration workflow."""
-        print("\n--- Account Registration ---")
-        user_db = self.user_db
-
-        if not username:
-            print("Error: Username cannot be blank.")
-            return
-
-        if username in user_db:
-            print("Error: Username already exists. Please pick another.")
-            return
-
-
-        if password != password:
-            print("Error: Passwords do not match.")
-            return
-
-        if len(password) < 6:
-            print("Error: Password must be at least 6 characters long.")
-            return
-
-        hashed_pwd = self.hash_password(password)
-        self.save_user(username, hashed_pwd)
-        self.user_db[username] = hashed_pwd
-        print(f"Success: Account created successfully for '{username}'!")
-
-
-    def login_user(self, username: str, password: str):
-        """Handles the user authentication workflow."""
-        print("\n--- User Login ---")
-        user_db = self.user_db
-
-        hashed_pwd = self.hash_password(password)
-
-        # Secure validation step
-        if username in user_db and user_db[username] == hashed_pwd:
-            print(f"\nWelcome back, {username}! Login successful.")
-            return True
-        else:
-            print("\nError: Invalid username or password.")
-            return False
+    def require_admin(self, token: str):
+        """Checks if the provided token belongs to an admin user."""
+        try:
+            token_data = self.decode_token(token)
+            username, role = token_data.username, token_data.role
+            if role != "admin":
+                raise AuthError("Admin privileges required.", status.HTTP_403_FORBIDDEN)
+            return username
+        except AuthError as e:
+            raise HTTPException(status_code=e.status_code, detail=str(e))
