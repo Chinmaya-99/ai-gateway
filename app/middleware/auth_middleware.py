@@ -80,6 +80,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 status_code=401,
                 content={"detail": str(e.error)}
             )
+        print("Path:", path)
+        print("Required role:", required_role)
+        print("Token role:", token_data.role)
 
         # Role check
         if required_role == "admin" and token_data.role != "admin":

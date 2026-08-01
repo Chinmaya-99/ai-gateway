@@ -10,17 +10,22 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openrouter import ChatOpenRouter
 from langchain_groq import ChatGroq
 from app.models.response_models import LLMResponse
+from llm.complexcity.complexcity_features import ComplexityFeatures
+from app.models.EmbeddingPacket import EmbeddingPacket
+
 
 load_dotenv()
 
 
 class models_init:
-    def __init__(self):
+    def __init__(self): 
+        self.complexity_features= ComplexityFeatures()
         self.gemini = ChatGoogleGenerativeAI(
             model="gemini-3.1-flash-lite-preview", temperature=0.0
         )
         self.lamma = ChatGroq(
             model="llama-3.1-8b-instant", temperature=0.0
+
             )
         self.prompt = ChatPromptTemplate.from_messages(
                 [
@@ -35,11 +40,19 @@ class models_init:
                     ),
                 ]
             )
-        self.final_chain = self.prompt | self.lamma.with_fallbacks([self.gemini])
+        self.simple_llm = self.prompt | self.lamma
+        self.complex_llm=self.prompt| self.gemini
     
 
-    async def get_response_llm(self, context: str, query: str):
-        """Async invoke — uses LangChain's ainvoke so the event loop stays free."""
-        return await self.final_chain.ainvoke(
-            {"context": context, "query": query}
-        )
+    async def get_response_llm(self, context: str, query: str, packet: EmbeddingPacket):
+        """Routes to simple or complex chain based on complexity score."""
+
+        complexity = await self.complexity_features.score(packet)
+
+        if complexity.tier == "High":
+            chain = self.complex_llm
+        else:
+            # Low and Medium both use simple chain
+            chain = self.simple_llm
+        return await chain.ainvoke(
+            {"context": context, "query": query})

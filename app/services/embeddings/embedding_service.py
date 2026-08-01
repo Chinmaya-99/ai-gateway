@@ -3,7 +3,6 @@ from functools import partial
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
-
 from app.models.cache_models import EmbeddingModelData
 
 load_dotenv()
@@ -33,3 +32,4 @@ class EmbeddingModel:
             text=text,
             embedding=embedding,
         )
+    

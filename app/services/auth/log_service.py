@@ -4,12 +4,15 @@ authservice = AuthService()
 class log_service: 
     def __init__(self):
         self.authservice = authservice
-        self.user_db = self.authservice.user_db
+
 
     def login_user(self, username: str, password: str):
         """Handles the user authentication workflow."""
         print("\n--- User Login ---")
-        user_db = self.user_db
+        user_db =self.authservice.load_database()
+        print(user_db)
+        print(user_db)
+        print(username)
 
 
         if username in user_db:

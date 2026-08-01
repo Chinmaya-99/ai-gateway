@@ -9,6 +9,7 @@ from app.services.llm.router import models_init as ModelsInit
 from app.db.response_store import ResponseStore
 from app.models.response_models import LLMResponse
 from app.db.chroma_client import VectorStore
+from app.services.embeddings.shared_embadding import SharedEmbeddingService
 
 SIMILARITY_THRESHOLD = 0.85
 
@@ -23,6 +24,7 @@ class CacheManager:
         self.response_store: ResponseStore | None = None
         self.llm: ModelsInit | None = None
         self.vector_store: VectorStore | None = None
+        self.shared_embedding:SharedEmbeddingService | None=None
 
     @classmethod
     async def create(cls) -> "CacheManager":
@@ -35,6 +37,7 @@ class CacheManager:
         self.embedding_model = EmbeddingModel()
         self.exact_cache = ExactCache()
         self.llm = ModelsInit()
+        self.shared_embedding =SharedEmbeddingService()
 
         # Async inits (IO — DB connections, chroma client)
         self.semantic_cache = await SemanticCache.create()
@@ -85,13 +88,14 @@ class CacheManager:
                 "total": result["total_tokens"],
             }
         # ── L3: LLM processing ─────────────────────────────────────────
-        raw_response = await self.llm.get_response_llm(context="", query=query)
+        shared_embedding=await self.shared_embedding.share_embed(embedding_data)
+        raw_response = await self.llm.get_response_llm(context="", query=query,packet=shared_embedding)
 
         response = LLMResponse(
             cache_id=cache_id,
             provider=raw_response.response_metadata["model_provider"],
             model=raw_response.response_metadata["model_name"],
-            answer=raw_response.content,
+            answer=raw_response.content["answer"],
             prompt_tokens=raw_response.response_metadata["token_usage"][
                 "prompt_tokens"
             ],
