@@ -1,7 +1,7 @@
 import chromadb
 from pathlib import Path
 
-from app.models.cache_models import EmbeddingModelData
+from app.models.cache_models import ChromaModel
 PROJECT_ROOT = Path(__file__).resolve()
 
 while PROJECT_ROOT.name != "ai_gateway":
@@ -29,9 +29,9 @@ class VectorStore:
         print("VECTOR PATH:", CHROMA_PATH)
         print("VECTOR COLLECTION:", self.collection.name)
 
-    async def add_documents(self, data: EmbeddingModelData):
+    async def add_documents(self, data: ChromaModel):
         self.collection.add(
-            documents=[data.text], embeddings=[data.embedding], ids=[data.cache_id]
+            embeddings=[data.embedding], ids=[data.cache_id]
         )
         return {
             "status": "success",

@@ -1,4 +1,3 @@
-import hashlib
 import uuid
 from datetime import datetime
 
@@ -9,10 +8,9 @@ from app.services.llm.router import models_init as ModelsInit
 from app.db.response_store import ResponseStore
 from app.models.response_models import LLMResponse
 from app.db.chroma_client import VectorStore
-from app.services.embeddings.shared_embadding import SharedEmbeddingService
+from app.services.embeddings.shared_embadding import SharedEmbeddingService,chromaDB_Service
 
 SIMILARITY_THRESHOLD = 0.85
-
 
 class CacheManager:
 
@@ -25,6 +23,7 @@ class CacheManager:
         self.llm: ModelsInit | None = None
         self.vector_store: VectorStore | None = None
         self.shared_embedding:SharedEmbeddingService | None=None
+        self.chromaDB_Service:chromaDB_Service | None=None
 
     @classmethod
     async def create(cls) -> "CacheManager":
@@ -38,6 +37,8 @@ class CacheManager:
         self.exact_cache = ExactCache()
         self.llm = ModelsInit()
         self.shared_embedding =SharedEmbeddingService()
+        self.chromaDB_Service =chromaDB_Service()
+        
 
         # Async inits (IO — DB connections, chroma client)
         self.semantic_cache = await SemanticCache.create()
@@ -48,13 +49,15 @@ class CacheManager:
         # ── L1: Exact cache (SHA-256) ──────────────────────────────────
         exact_hit = await self._check_exact_cache(query)
         if exact_hit:
-            return {
-                "answer": exact_hit,
-                "cache_hit": True,
-                "cache_tier": "L1_exact",
-                "provider": "cache",
-                "tokens": None,
-            }
+            result = await self.response_store.get_response(cache_id=exact_hit)
+            if result:
+             return {
+                 "answer": result["answer"],
+                 "cache_hit": True,
+                 "cache_tier": "L1_exact",
+                 "provider": "cache",
+                 "tokens": None,
+             }
 
         # ── L2: Semantic cache (vector similarity) ─────────────────────
         cache_id = str(uuid.uuid4())  # unique ID linking query embedding ↔ response
@@ -63,9 +66,9 @@ class CacheManager:
         query_embedding = embedding_data.embedding
 
         semantic_hit = await self.semantic_cache.search_similar(query_embedding)
-        hit_id = semantic_hit["cache_id"]
 
         if semantic_hit and semantic_hit["similarity"] >= SIMILARITY_THRESHOLD:
+            hit_id = semantic_hit["cache_id"]
             print("Semantic hit:", semantic_hit)
             print("Cache ID:", hit_id)
 
@@ -74,11 +77,10 @@ class CacheManager:
             print("Response Store Result:", result)
             print("Semantic Cache Hit:", semantic_hit)
             if result is None:
-                print("No response found in response store for cache ID:", hit_id)
-                print("Proceeding to L3 LLM processing.")
+             print("No response found, falling through to L3.")
+            else:
 
-
-            return {
+             return {
                 "answer": result["answer"],
                 "cache_hit": True,
                 "cache_tier": "L2_semantic",
@@ -86,16 +88,17 @@ class CacheManager:
                 "prompt": result["prompt_tokens"],
                 "completion": result["completion_tokens"],
                 "total": result["total_tokens"],
-            }
+             }
         # ── L3: LLM processing ─────────────────────────────────────────
         shared_embedding=await self.shared_embedding.share_embed(embedding_data)
         raw_response = await self.llm.get_response_llm(context="", query=query,packet=shared_embedding)
 
+        print(raw_response)
         response = LLMResponse(
             cache_id=cache_id,
             provider=raw_response.response_metadata["model_provider"],
             model=raw_response.response_metadata["model_name"],
-            answer=raw_response.content["answer"],
+            answer=raw_response.content,
             prompt_tokens=raw_response.response_metadata["token_usage"][
                 "prompt_tokens"
             ],
@@ -106,10 +109,12 @@ class CacheManager:
             created_at=datetime.utcnow(),
         )
         print("LLM Response:", response)
+        chromadata = await self.chromaDB_Service.convert(query_embedding, cache_id) 
 
-        await self.vector_store.add_documents(embedding_data)
+
+        await self.vector_store.add_documents(chromadata)
         await self.response_store.add_response(response)
-
+        await self.exact_cache.store(query,cache_id=cache_id)
         return {
             "answer": response.answer,
             "cache_hit": False,
@@ -123,9 +128,8 @@ class CacheManager:
         }
 
     async def _check_exact_cache(self, query: str) -> str | None:
-        """L1: SHA-256 hash lookup. Returns None until Redis is wired up."""
-        key = hashlib.sha256(query.strip().lower().encode()).hexdigest()
-        return await self.exact_cache.lookup(key)
+
+        return await self.exact_cache.lookup(query)
 
     async def close(self):
         """Clean shutdown — call from FastAPI lifespan."""

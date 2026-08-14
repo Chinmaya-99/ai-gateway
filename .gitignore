@@ -30,3 +30,5 @@ storage/responses.db
 
 #credentials
 services/auth/user_credentials.txt
+
+.pytest_cache/
