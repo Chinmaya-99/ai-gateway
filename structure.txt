@@ -1,0 +1,134 @@
+.
+├── app
+│   ├── api
+│   │   ├── dependencies.py
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-312.pyc
+│   │   └── routes
+│   │       ├── cache.py
+│   │       ├── chat.py
+│   │       ├── embeddings.py
+│   │       ├── health.py
+│   │       ├── __init__.py
+│   │       └── __pycache__
+│   │           ├── cache.cpython-312.pyc
+│   │           ├── chat.cpython-312.pyc
+│   │           ├── embeddings.cpython-312.pyc
+│   │           ├── health.cpython-312.pyc
+│   │           └── __init__.cpython-312.pyc
+│   ├── core
+│   │   ├── config.py
+│   │   ├── constants.py
+│   │   ├── __init__.py
+│   │   ├── logging.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-312.pyc
+│   │   └── security.py
+│   ├── db
+│   │   ├── chroma_client.py
+│   │   ├── __init__.py
+│   │   ├── postgres.py
+│   │   ├── __pycache__
+│   │   │   ├── chroma_client.cpython-312.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   └── response_store.cpython-312.pyc
+│   │   ├── redis_client.py
+│   │   └── response_store.py
+│   ├── __init__.py
+│   ├── middleware
+│   │   ├── auth_middleware.py
+│   │   ├── __init__.py
+│   │   ├── logging_middleware.py
+│   │   └── rate_limit_middleware.py
+│   ├── models
+│   │   ├── cache_models.py
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── cache_models.cpython-312.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── request_models.cpython-312.pyc
+│   │   │   └── response_models.cpython-312.pyc
+│   │   ├── request_models.py
+│   │   ├── response_models.py
+│   │   ├── token_model.py
+│   │   └── user_log_req_model.py
+│   ├── __pycache__
+│   │   └── __init__.cpython-312.pyc
+│   ├── services
+│   │   ├── auth
+│   │   │   ├── auth_service.py
+│   │   │   └── __init__.py
+│   │   ├── cache
+│   │   │   ├── cache_manager.py
+│   │   │   ├── exact_cache.py
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── cache_manager.cpython-312.pyc
+│   │   │   │   ├── exact_cache.cpython-312.pyc
+│   │   │   │   ├── __init__.cpython-312.pyc
+│   │   │   │   └── semantic_cache.cpython-312.pyc
+│   │   │   ├── semantic_cache.py
+│   │   │   └── similarity.py
+│   │   ├── embeddings
+│   │   │   ├── embedding_service.py
+│   │   │   ├── __init__.py
+│   │   │   ├── providers.py
+│   │   │   └── __pycache__
+│   │   │       ├── embedding_service.cpython-312.pyc
+│   │   │       └── __init__.cpython-312.pyc
+│   │   ├── __init__.py
+│   │   ├── llm
+│   │   │   ├── anthropic_service.py
+│   │   │   ├── __init__.py
+│   │   │   ├── openai_service.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-312.pyc
+│   │   │   │   └── router.cpython-312.pyc
+│   │   │   └── router.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-312.pyc
+│   │   └── rate_limit
+│   │       ├── __init__.py
+│   │       └── limiter.py
+│   └── utils
+│       ├── hashing.py
+│       ├── helpers.py
+│       ├── __init__.py
+│       └── token_counter.py
+├── docker
+│   ├── docker-compose.yml
+│   └── Dockerfile
+├── docs
+│   ├── api_reference.md
+│   ├── architecture.md
+│   └── cache_design.md
+├── main.py
+├── __pycache__
+│   └── main.cpython-312.pyc
+├── pyproject.toml
+├── README.md
+├── requirements.txt
+├── scripts
+│   ├── benchmark.py
+│   └── populate_cache.py
+├── storage
+│   ├── chromadb
+│   │   ├── 00e3d6e7-14ea-40b5-b4b4-ca9ea96befc7
+│   │   │   ├── data_level0.bin
+│   │   │   ├── header.bin
+│   │   │   ├── length.bin
+│   │   │   └── link_lists.bin
+│   │   └── chroma.sqlite3
+│   └── responses.db
+├── structure.txt
+└── tests
+    ├── overall_test.py
+    ├── __pycache__
+    │   └── overall_test.cpython-312.pyc
+    ├── test_cache.py
+    ├── test_embeddings.py
+    ├── test_rate_limit.py
+    └── test_routes.py
+
+34 directories, 98 files

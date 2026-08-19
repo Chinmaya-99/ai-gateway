@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Cache
+.cache/
+
+# Redis dump
+dump.rdb
+
+# OS
+.DS_Store
+
+
+#storage
+storage/chromadb/
+storage/responses.db
+
+#credentials
+services/auth/user_credentials.txt
+
+.pytest_cache/
